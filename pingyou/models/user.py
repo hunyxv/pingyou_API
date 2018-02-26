@@ -36,8 +36,8 @@ class Role(db.Document):
     def insert_roles():
         roles = {
             'Student': (Permission.COMMENT |
-                     Permission.LOOKREPORT |
-                     Permission.APPLY_PROJECT, True),
+                        Permission.LOOKREPORT |
+                        Permission.APPLY_PROJECT, True),
             'Monitor': (Permission.COMMENT |
                         Permission.LOOKREPORT |
                         Permission.APPLY_PROJECT |
@@ -61,7 +61,7 @@ class Role(db.Document):
 
 
 class User(BaseModel, db.Document):
-    username = db.StringField(required=True, unique=True, max_length=50)
+    username = db.StringField(unique=True, max_length=50)
     password_bash = db.StringField(required=True, max_length=50)
     role = db.ReferenceField('Role')
     confirmed = db.BooleanField(default=False)
@@ -69,12 +69,12 @@ class User(BaseModel, db.Document):
     name = db.StringField(required=True)
     s_id = db.IntField(required=True, unique=True)
     gender = db.StringField(choices=['Male', 'Female'])
-    department = db.StringField(required=True,max_length=50)
+    department = db.StringField(required=True, max_length=50)
     _class = db.StringField(max_length=50)
     email = db.EmailField(unique=True)
 
     meta = {'db_alias': 'pingyou',
-            'indexes': ['username', 'name'],
+            'indexes': ['username', 'name', 's_id'],
             'collection': 'users'
             }
 
@@ -87,6 +87,7 @@ class User(BaseModel, db.Document):
                 self.role = Role.objects(permissions=0x33).first()
             if self.role is None:
                 self.role = Role.objects(default=True).first()
+        self.username = self.s_id
 
     def can(self, permissions):
         return self.role is not None and (
@@ -99,6 +100,7 @@ class User(BaseModel, db.Document):
     def password(self):
         raise AttributeError('password is not a readable')
 
+    # 设置密码
     @password.setter
     def password(self, password):
         self.password_bash = generate_password_hash(password)
@@ -115,23 +117,35 @@ class User(BaseModel, db.Document):
             'department': self.department,
 
         }
-        return jsonify()
+        return jsonify({'data': data})
 
+    @classmethod
     def get_by_username(self, username):
+        user = User.objects.get(username=username)
+        return user if user else None
 
+    @classmethod
+    def get_by_sid(self, sid):
+        user = User.objects.get(s_id=sid)
+        return user if user else None
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    # 验证密码
     @classmethod
-    def validate_password(cls, username, password):
-        user = cls.get_by_username(username)
+    def validate_password(cls, username_sid, password):
+        user = cls.get_by_username(username_sid)
+        if not user:
+            user = cls.get_by_sid(username_sid)
         if user and user.verify_password(password.encode('utf-8')):
             return user
 
+    def __repr__(self):
+        return '<User %r>' % self.username
 
-def authenticate(username, password):
-    user = User.validate_password(username, password)
+def authenticate(username_sid, password):
+    user = User.validate_password(username_sid, password)
     return user if user else None
 
 
