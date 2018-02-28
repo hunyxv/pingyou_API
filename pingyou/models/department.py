@@ -4,9 +4,10 @@ from pingyou.models.base_model import BaseModel
 
 
 class Department(BaseModel, db.Document):
-    name = db.StringField()
+    up_one_level = db.ReferenceField('Department')
+    name = db.StringField(required=True, max_length=50)
 
-    meta = {'db_alias': 'pingyou',
+    meta = {#'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
             'indexes': ['name'],
             'collection': 'department'}
 

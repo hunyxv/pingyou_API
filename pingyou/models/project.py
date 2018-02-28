@@ -6,7 +6,7 @@ from pingyou.models.base_model import BaseModel
 class Project(BaseModel, db.Document):
     name = db.StringField(required=True)
 
-    meta = {'db_alias': 'pingyou',
+    meta = {#'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
             'indexes': ['name'],
             'collection': 'project'
             }

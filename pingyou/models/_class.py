@@ -4,11 +4,11 @@ from pingyou.models.base_model import BaseModel
 
 
 class _Class(BaseModel, db.Document):
-    name = db.StringField()
+    name = db.StringField(required=True, max_length=50)
 
-    meta = {'db_alias': 'pingyou',
+    meta = {# 'db_alias': 'pingyou',
             'indexes': ['name'],
-            'collection': '_class'}
+            'collection': 'class'}
 
     def api_response(self):
         return jsonify({

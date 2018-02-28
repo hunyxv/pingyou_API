@@ -20,7 +20,7 @@ class Project_detail(BaseModel, db.Document):
     exp = db.IntField(default=7)
     create_date = db.DateTimeField(default=datetime.datetime.now())
 
-    meta = {'db_alias': 'pingyou',
+    meta = {#'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
             'indexes': ['name'],
             'collection': 'project'
             }

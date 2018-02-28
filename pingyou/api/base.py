@@ -7,6 +7,7 @@ from werkzeug.exceptions import HTTPException
 
 from pingyou.common import util
 
+
 class BaseAPI(Resource):
     allow_headers = ['Content-Type',
                      'Access-Control-Allow-Headers',
@@ -16,6 +17,7 @@ class BaseAPI(Resource):
     @cors.crossdomain(origin='*', headers=allow_headers)
     def options(self, id=None):
         return {'Allow': 'True'}
+
 
 class Service(Api):
 

@@ -7,7 +7,7 @@ basesdir = os.path.abspath(os.path.dirname(__name__))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or \
-                 'c\x05\xe7\xfd,\x98\xf5\xba\x17\xffg\xc0\\\xe2e\x1eX\x0e\xd7D.\xa1t\x8e'
+        'c\x05\xe7\xfd,\x98\xf5\xba\x17\xffg\xc0\\\xe2e\x1eX\x0e\xd7D.\xa1t\x8e'
     FLASKY_MAIL_SENDER = 'xxxx@163.com'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN') or 'admin@qq.com'
     FLASKY_MAIL_SUBJECT_PREFIX = '[评优评先系统]'
@@ -16,7 +16,6 @@ class Config:
     FLASKY_COMMENTS_PER_PAGE = 20
     JWT_AUTH_URL_RULE = None
     JWT_EXPIRATION_DELTA = datetime.timedelta(days=14)
-
 
     @staticmethod
     def init_app(app):

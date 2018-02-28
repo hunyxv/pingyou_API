@@ -28,9 +28,9 @@ class Role(db.Document):
     default = db.BooleanField(default=False)
     permissions = db.IntField()
 
-    meta = {'db_alias': 'pingyou',
-            'collection': 'role'
-            }
+    meta = {  # 'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
+        'collection': 'role'
+    }
 
     @staticmethod
     def insert_roles():
@@ -62,21 +62,21 @@ class Role(db.Document):
 
 class User(BaseModel, db.Document):
     username = db.StringField(unique=True, max_length=50)
-    password_bash = db.StringField(required=True, max_length=50)
+    password_bash = db.StringField()
     role = db.ReferenceField('Role')
     confirmed = db.BooleanField(default=False)
 
     name = db.StringField(required=True)
     s_id = db.IntField(required=True, unique=True)
     gender = db.StringField(choices=['Male', 'Female'])
-    department = db.StringField(required=True, max_length=50)
-    _class = db.StringField(max_length=50)
+    department = db.ReferenceField('Department', required=True, max_length=50)
+    _class = db.ReferenceField('_Class')
     email = db.EmailField(unique=True)
 
-    meta = {'db_alias': 'pingyou',
-            'indexes': ['username', 'name', 's_id'],
-            'collection': 'users'
-            }
+    meta = {  # 'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
+        'indexes': ['username', 'name', 's_id'],
+        'collection': 'users'
+    }
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -87,11 +87,11 @@ class User(BaseModel, db.Document):
                 self.role = Role.objects(permissions=0x33).first()
             if self.role is None:
                 self.role = Role.objects(default=True).first()
-        self.username = self.s_id
+        self.username = 'XK' + str(self.s_id)
 
     def can(self, permissions):
         return self.role is not None and (
-                self.role.permissions & permissions) == permissions
+            self.role.permissions & permissions) == permissions
 
     def is_administrator(self):
         return self.can(Permission.ADMINSTER)
@@ -120,17 +120,17 @@ class User(BaseModel, db.Document):
         return jsonify({'data': data})
 
     @classmethod
-    def get_by_username(self, username):
-        user = User.objects.get(username=username)
+    def get_by_username(cls, username):
+        user = cls.objects(username=username).first()
         return user if user else None
 
     @classmethod
-    def get_by_sid(self, sid):
-        user = User.objects.get(s_id=sid)
+    def get_by_sid(cls, sid):
+        user = cls.objects(s_id=sid).first()
         return user if user else None
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password_bash, password)
 
     # 验证密码
     @classmethod
@@ -138,11 +138,12 @@ class User(BaseModel, db.Document):
         user = cls.get_by_username(username_sid)
         if not user:
             user = cls.get_by_sid(username_sid)
-        if user and user.verify_password(password.encode('utf-8')):
+        if user and user.verify_password(str(password).encode('utf-8')):
             return user
 
     def __repr__(self):
         return '<User %r>' % self.username
+
 
 def authenticate(username_sid, password):
     user = User.validate_password(username_sid, password)
