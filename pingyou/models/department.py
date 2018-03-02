@@ -7,9 +7,9 @@ class Department(BaseModel, db.Document):
     up_one_level = db.ReferenceField('Department')
     name = db.StringField(required=True, max_length=50)
 
-    meta = {#'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
-            'indexes': ['name'],
-            'collection': 'department'}
+    meta = {  # 'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
+        'indexes': ['name'],
+        'collection': 'department'}
 
     def api_response(self):
         return jsonify({

@@ -16,6 +16,7 @@ def jwt_payload_handler(identity):
     identity = getattr(identity, 'id', None) or identity['id']
     return {'exp': exp, 'iat': iat, 'nbf': nbf, 'identity': str(identity)}
 
+
 @jwt.auth_response_handler
 def auth_response_handler(access_token, identity):
     # data = {'access_token': access_token.decode('utf-8')}

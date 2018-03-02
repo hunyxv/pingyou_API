@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
+
 class BaseModel(object):
     __metaclass__ = ABCMeta
 
@@ -18,4 +19,3 @@ class BaseModel(object):
     @abstractmethod
     def api_base_response(self):
         pass
-

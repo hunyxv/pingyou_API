@@ -10,7 +10,7 @@ from pingyou.models.base_model import BaseModel
 class Project_detail(BaseModel, db.Document):
     name = db.StringField(required=True)
     project = db.ReferenceField('Project', required=True)
-    department = db.ReferenceField('Department',required=True)
+    department = db.ReferenceField('Department', required=True)
     _class = db.ReferenceField('_Class', required=True)
     counselor = db.ReferenceField('User', required=True)
     places = db.IntField(required=True)
@@ -20,10 +20,10 @@ class Project_detail(BaseModel, db.Document):
     exp = db.IntField(default=7)
     create_date = db.DateTimeField(default=datetime.datetime.now())
 
-    meta = {#'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
-            'indexes': ['name'],
-            'collection': 'project'
-            }
+    meta = {  # 'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
+        'indexes': ['name'],
+        'collection': 'project'
+    }
 
     def api_response(self):
         data = {

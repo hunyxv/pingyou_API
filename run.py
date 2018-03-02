@@ -3,14 +3,17 @@ from flask_migrate import Migrate, MigrateCommand
 
 from pingyou import app, api, db
 from pingyou.api import v1
-from pingyou.models import User, Role
+from pingyou.models import User, Role, Department, _Class
 
 manager = Manager(app)
 migrate = Migrate(app)
 
 
 def make_shell_context():
-    return dict(app=app, db=db, User=User, Role=Role)
+    return dict(
+        app=app, db=db, User=User,
+        Role=Role, Department=Department, _Class=_Class
+    )
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))

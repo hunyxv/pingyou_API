@@ -1,3 +1,5 @@
+import datetime
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 from pingyou import db
@@ -72,6 +74,10 @@ class User(BaseModel, db.Document):
     department = db.ReferenceField('Department', required=True, max_length=50)
     _class = db.ReferenceField('_Class')
     email = db.EmailField(unique=True)
+    qq_num = db.StringField(max_length=10)
+    weixin = db.StringField(max_length=50)
+
+    enrollment_date = db.DateTimeField(default=datetime.datetime.today())
 
     meta = {  # 'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
         'indexes': ['username', 'name', 's_id'],
@@ -81,10 +87,12 @@ class User(BaseModel, db.Document):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
-            if self.email == current_app.config['PINGYOU_ADMIN']:
+            if self.email == '1035794358@qq.com':#current_app.config['PINGYOU_ADMIN']:
                 self.role = Role.objects(permissions=0xff).first()
-            if self.s_id < 2000000000:
+                self.enrollment_date = datetime.datetime.max
+            elif self.s_id < 2000000000:
                 self.role = Role.objects(permissions=0x33).first()
+                self.enrollment_date = datetime.datetime.max
             if self.role is None:
                 self.role = Role.objects(default=True).first()
         self.username = 'XK' + str(self.s_id)
@@ -103,10 +111,10 @@ class User(BaseModel, db.Document):
     # 设置密码
     @password.setter
     def password(self, password):
-        self.password_bash = generate_password_hash(password)
+        self.password_bash = generate_password_hash(str(password))
 
     def api_response(self):
-        data = {
+        return {
             'id': str(self.id),
             'username': self.username,
             'role': self.role.name,
@@ -114,10 +122,22 @@ class User(BaseModel, db.Document):
             's_id': self.s_id,
             'confirmed': self.confirmed,
             'gender': self.gender,
-            'department': self.department,
-
+            'department': self.department.name,
+            'class': self._class.name,
+            'email': self.email,
+            'qq_num': self.qq_num,
+            'weixin': self.weixin,
         }
-        return jsonify({'data': data})
+
+    def api_base_response(self):
+        return {
+            'id': str(self.id),
+            'username': self.username,
+            'role': self.role.name,
+            'gender': self.gender,
+            'department': self.department.name,
+            'class': self._class.name
+        }
 
     @classmethod
     def get_by_username(cls, username):
