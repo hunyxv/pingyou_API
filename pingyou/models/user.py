@@ -66,14 +66,15 @@ class User(BaseModel, db.Document):
     username = db.StringField(unique=True, max_length=50)
     password_bash = db.StringField()
     role = db.ReferenceField('Role')
-    confirmed = db.BooleanField(default=False)
+    confirmed = db.BooleanField(default=True)
+    #is_live = db.BooleanField(default=False)
 
     name = db.StringField(required=True)
     s_id = db.IntField(required=True, unique=True)
-    gender = db.StringField(choices=['Male', 'Female'])
+    gender = db.StringField(choices=['Male', 'Female', 'Secret'], default='Secret')
     department = db.ReferenceField('Department', required=True, max_length=50)
     _class = db.ReferenceField('_Class')
-    email = db.EmailField(unique=True)
+    email = db.EmailField()
     qq_num = db.StringField(max_length=10)
     weixin = db.StringField(max_length=50)
 
@@ -118,6 +119,7 @@ class User(BaseModel, db.Document):
             'id': str(self.id),
             'username': self.username,
             'role': self.role.name,
+            #'is_live': self.is_live,
             'name': self.name,
             's_id': self.s_id,
             'confirmed': self.confirmed,
