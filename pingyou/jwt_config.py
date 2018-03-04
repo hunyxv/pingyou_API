@@ -8,6 +8,8 @@ from pingyou.common import util
 jwt = JWT(app, authenticate, identity)
 
 # 构造载荷
+
+
 @jwt.jwt_payload_handler
 def jwt_payload_handler(identity):
     iat = datetime.datetime.utcnow()

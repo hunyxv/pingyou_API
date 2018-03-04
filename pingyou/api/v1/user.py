@@ -17,6 +17,10 @@ parser = reqparse.RequestParser()
 @api.route('/api/v1/login', endpoint='login')
 class LoginAPI(BaseAPI):
     def post(self):
+        """
+        用户登录
+        :return:
+        """
         data = request.get_json()
         username_sid = data.get('username_sid', None)
         password = data.get('password', None)
@@ -27,8 +31,8 @@ class LoginAPI(BaseAPI):
 
         identity = jwt.authentication_callback(username_sid, password)
         if identity and identity.confirmed:
-            if identity.role.permissions >= 0x33 or identity.enrollment_date + \
-                    datetime.timedelta(days=365 * 4) > datetime.datetime.today():
+            if identity.role.permissions >= 0x33 or (identity.enrollment_date +
+                    datetime.timedelta(days=365 * 4) > datetime.datetime.today()):
                 access_token = jwt.jwt_encode_callback(identity)
                 return jwt.auth_response_callback(access_token, identity)
             identity.confirmed = False
@@ -41,6 +45,11 @@ class LoginAPI(BaseAPI):
 class CodeApi(BaseAPI):
     @jwt_required()
     def get(self):
+        """
+        重设密码时用来生成验证码 并 通过邮件发给用户
+        发送邮件最好用异步方式 暂时没用
+        :return: json
+        """
         current_user = get_current_user()
         code = util.generate_code(current_user)
         context = {'username': current_user.name, "code": code}
@@ -53,6 +62,11 @@ class CodeApi(BaseAPI):
 class UserAPI(BaseAPI):
     @jwt_required()
     def get(self, id=None):
+        """
+        获取用户信息
+        :param id: str
+        :return: json
+        """
         current_user = get_current_user()
 
         if id == 'me':
@@ -68,17 +82,25 @@ class UserAPI(BaseAPI):
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
             elif current_user.role.permissions == 0x33:
-                user_list = User.objects(department=current_user.department).order_by('s_id')
+                user_list = User.objects(
+                    department=current_user.department).order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
             else:
-                user_list = User.objects(_class=current_user._class).order_by('s_id')
+                user_list = User.objects(
+                    _class=current_user._class,
+                    department=current_user.department).order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
 
     @jwt_required()
     @permission_filter(0x33)
     def post(self):
+        """
+        创建用户
+        只有辅导员以上级别能创建
+        :return:
+        """
         # current_user = get_current_user()
 
         data = request.get_json()
@@ -102,6 +124,11 @@ class UserAPI(BaseAPI):
 
     @jwt_required()
     def put(self, id=None):
+        """
+        更新 用户信息 密码
+        :param id: str
+        :return: json
+        """
         if not id:
             raise ValueError('Id is not found!')
         data = request.get_json()
@@ -109,7 +136,7 @@ class UserAPI(BaseAPI):
 
         if id == 'me':
             if 'password' in data and 'code' in data:
-                print(data['code'],data['password'])
+                print(data['code'], data['password'])
                 if util.verify_code(current_user, data['code']):
                     current_user.password = data['password']
                     current_user.save()
@@ -125,7 +152,7 @@ class UserAPI(BaseAPI):
 
         user = User.get_by_id(id=id)
         if (current_user.role.permissions == 0x0f and
-                current_user.role.permissions > user.role.permissions):   # 班长
+                current_user.role.permissions > user.role.permissions):  # 班长
             user.update_info(name=data['name'])
             return util.api_response(user.api_response())
         elif current_user.role.permissions > user.role.permissions:
@@ -136,6 +163,12 @@ class UserAPI(BaseAPI):
     @jwt_required()
     @permission_filter(0x33)
     def delete(self, id=None):
+        """
+        删除用户 使用户过期
+        只有高级用户更改低级用户
+        :param id:
+        :return:
+        """
         if id is None:
             raise ValueError('Id not found')
         user = User.objects.get(id=id)

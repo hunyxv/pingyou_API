@@ -16,6 +16,7 @@ def api_response(data=None, status_code=200):
         data = {}
     return {'data': data}, status_code, {'Access-Control-Allow-Origin': '*'}
 
+
 def generate_code(user):
     source = string.ascii_letters + string.digits
     code = ''.join(random.sample(source, 5))

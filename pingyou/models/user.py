@@ -75,7 +75,12 @@ class User(BaseModel, db.Document):
 
     name = db.StringField(required=True)
     s_id = db.IntField(required=True, unique=True)
-    gender = db.StringField(choices=['Male', 'Female', 'Secret'], default='Secret')
+    gender = db.StringField(
+        choices=[
+            'Male',
+            'Female',
+            'Secret'],
+        default='Secret')
     department = db.ReferenceField('Department', required=True, max_length=50)
     _class = db.ReferenceField('_Class')
     email = db.EmailField()
@@ -92,7 +97,8 @@ class User(BaseModel, db.Document):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
-            if self.email == '1035794358@qq.com':#current_app.config['PINGYOU_ADMIN']:
+            # current_app.config['PINGYOU_ADMIN']:
+            if self.email == '1035794358@qq.com':
                 self.role = Role.objects(permissions=0xff).first()
                 self.enrollment_date = datetime.datetime.max
             elif self.s_id < 2000000000:
@@ -143,7 +149,6 @@ class User(BaseModel, db.Document):
             self.weixin = kwargs['weixin']
 
         self.save()
-
 
     def api_response(self):
         return {
