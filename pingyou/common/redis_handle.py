@@ -10,4 +10,4 @@ def save_code(key, code):
 
 
 def get_code(key):
-    return r.get(str(key))
+    return r.get(str(key)).decode('utf8')

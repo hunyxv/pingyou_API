@@ -16,7 +16,7 @@ def permission_filter(permission=None):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             user = get_current_user()
-            if user.can(permission):
+            if user.role.permissions < permission:
                 raise Exception("User don't have permissionro access!")
             return func(*args, **kwargs)
 

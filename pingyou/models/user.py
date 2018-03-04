@@ -135,7 +135,7 @@ class User(BaseModel, db.Document):
             self.department = kwargs['department']
         if '_class' in kwargs:
             self._class = kwargs['_class']
-        if 'email' in kwargs['email']:
+        if 'email' in kwargs:
             self.email = kwargs['email']
         if 'qq_num' in kwargs:
             self.qq_num = kwargs['qq_num']

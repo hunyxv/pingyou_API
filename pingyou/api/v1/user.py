@@ -8,8 +8,8 @@ from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.jwt_config import jwt
 from pingyou.service.user import get_current_user, permission_filter
-from pingyou.models import User, Role, Permission
-from pingyou.common import util
+from pingyou.models import User, Department
+from pingyou.common import util, send_email
 
 parser = reqparse.RequestParser()
 
@@ -38,11 +38,14 @@ class LoginAPI(BaseAPI):
 
 
 @api.route('/api/v1/code', endpoint='code')
-class CodeApi:
+class CodeApi(BaseAPI):
     @jwt_required()
     def get(self):
         current_user = get_current_user()
-        util.generate_code(current_user)
+        code = util.generate_code(current_user)
+        context = {'username': current_user.name, "code": code}
+        send_email.send_email(current_user.email, "修改密码", context)
+        return util.api_response({'success': True})
 
 
 @api.route('/api/v1/user', endpoint='user_add')
@@ -76,18 +79,15 @@ class UserAPI(BaseAPI):
     @jwt_required()
     @permission_filter(0x33)
     def post(self):
-        current_user = get_current_user()
+        # current_user = get_current_user()
 
         data = request.get_json()
         # username = data['username'].strip()
         password = data['password'].strip()
-        name = data.get('name', '请填写')  # name  创建辅导员用户必须传递
+        name = data.get('name', '请填写')
         s_id = data['s_id']
-        department = current_user.department
+        department = data['department']
         _class = data['_class']
-        if current_user.can(Permission.ADMINSTER):
-            department = data['department']
-            _class = current_user._class
 
         user = User(
             name=name,
@@ -109,27 +109,29 @@ class UserAPI(BaseAPI):
 
         if id == 'me':
             if 'password' in data and 'code' in data:
+                print(data['code'],data['password'])
                 if util.verify_code(current_user, data['code']):
                     current_user.password = data['password']
+                    current_user.save()
                     return util.api_response({'success': True})
                 return util.api_response({'success': False})
 
             data.pop('name', None)
-            data.pop('confirmed', None)
+            data.pop('department', None)
+            data.pop('_class', None)
+            data.pop('role', None)
             current_user.update_info(**data)
             return util.api_response(current_user.api_response())
 
         user = User.get_by_id(id=id)
         if (current_user.role.permissions == 0x0f and
                 current_user.role.permissions > user.role.permissions):   # 班长
-            user.update(name=data['name'])
+            user.update_info(name=data['name'])
             return util.api_response(user.api_response())
         elif current_user.role.permissions > user.role.permissions:
-            user.update(**data)
+            user.update_info(**data)
             return util.api_response(user.api_response())
-        else:
-            user.update(**data)
-            return util.api_response(user.api_response())
+        raise Exception("User don't have permissionro change!")
 
     @jwt_required()
     @permission_filter(0x33)
