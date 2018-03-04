@@ -32,7 +32,7 @@ class LoginAPI(BaseAPI):
         identity = jwt.authentication_callback(username_sid, password)
         if identity and identity.confirmed:
             if identity.role.permissions >= 0x33 or (identity.enrollment_date +
-                    datetime.timedelta(days=365 * 4) > datetime.datetime.today()):
+                                                     datetime.timedelta(days=365 * 4) > datetime.datetime.today()):
                 access_token = jwt.jwt_encode_callback(identity)
                 return jwt.auth_response_callback(access_token, identity)
             identity.confirmed = False
@@ -142,7 +142,6 @@ class UserAPI(BaseAPI):
                     current_user.save()
                     return util.api_response({'success': True})
                 return util.api_response({'success': False})
-
             data.pop('name', None)
             data.pop('department', None)
             data.pop('_class', None)
@@ -152,7 +151,8 @@ class UserAPI(BaseAPI):
 
         user = User.get_by_id(id=id)
         if (current_user.role.permissions == 0x0f and
-                current_user.role.permissions > user.role.permissions):  # 班长
+                current_user.department == user.department and
+                current_user._class == user._class):  # 班长
             user.update_info(name=data['name'])
             return util.api_response(user.api_response())
         elif current_user.role.permissions > user.role.permissions:
@@ -173,7 +173,7 @@ class UserAPI(BaseAPI):
             raise ValueError('Id not found')
         user = User.objects.get(id=id)
         current_user = get_current_user()
-        if current_user.role.permissions > user:
+        if current_user.role.permissions > user.role.permissions:
             user.confirmed = False
             user.save()
             return util.api_response(data={'SUCCESS': True})
