@@ -88,8 +88,8 @@ class UserAPI(BaseAPI):
                 return util.api_response(data=data)
             else:
                 user_list = User.objects(
-                    _class=current_user._class,
-                    department=current_user.department).order_by('s_id')
+                    department=current_user.department,
+                    _class=current_user._class).order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
 
