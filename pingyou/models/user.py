@@ -1,9 +1,11 @@
 import datetime
 
+import re
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import jsonify
+
 from pingyou import db
 from pingyou.models.base_model import BaseModel
+from pingyou.common import util
 from flask import current_app
 
 '''
@@ -22,10 +24,11 @@ class Permission:
     WRITE_ARTICLES = 0x08  # 撰写评选报告
     RELEASE_PROJECT = 0x10  # 发布项目
     AUDITING = 0x20  # 审核项目
+    UPDATE_INFO = 0x40
     ADMINSTER = 0xff  # 管理员权限
 
 
-class Role(db.Document):
+class Role(db.Document, BaseModel):
     name = db.StringField(uniqe=True)
     default = db.BooleanField(default=False)
     permissions = db.IntField()
@@ -47,7 +50,8 @@ class Role(db.Document):
             'Counselor': (Permission.COMMENT |
                           Permission.LOOKREPORT |
                           Permission.RELEASE_PROJECT |
-                          Permission.AUDITING, False),
+                          Permission.AUDITING |
+                          Permission.UPDATE_INFO, False),
             'Administrator': (0xff, False)
         }
         for r in roles:
@@ -113,6 +117,33 @@ class User(BaseModel, db.Document):
     @password.setter
     def password(self, password):
         self.password_bash = generate_password_hash(str(password))
+
+    def update_info(self, **kwargs):
+        if 'name' in kwargs:
+            self.name = util.clear_str(kwargs['name'])
+        if 'username' in kwargs:
+            self.username = util.clear_str(kwargs['name'])
+        if 'confirmed' in kwargs:
+            self.confirmed = kwargs['confirmed']
+        if 'role' in kwargs:
+            role = Role.get_by_id(id=kwargs['role'])
+            if role.permissions < 0x33:
+                self.role = role
+        if 'gender' in kwargs:
+            self.gender = kwargs['gender']
+        if 'department' in kwargs:
+            self.department = kwargs['department']
+        if '_class' in kwargs:
+            self._class = kwargs['_class']
+        if 'email' in kwargs['email']:
+            self.email = kwargs['email']
+        if 'qq_num' in kwargs:
+            self.qq_num = kwargs['qq_num']
+        if 'weixin' in kwargs:
+            self.weixin = kwargs['weixin']
+
+        self.save()
+
 
     def api_response(self):
         return {

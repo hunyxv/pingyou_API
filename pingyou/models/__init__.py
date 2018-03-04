@@ -1,4 +1,4 @@
-from .user import User, Role
+from .user import User, Role, Permission
 from .department import Department
 from ._class import _Class
 from .project import Project
@@ -8,6 +8,7 @@ from .project_detail import Project_detail
 __all__ = [
     'User',
     'Role',
+    'Permission',
     'Department',
     '_Class',
     'Project',
