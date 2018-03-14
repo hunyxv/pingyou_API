@@ -26,7 +26,7 @@ def generate_code(user):
 
 def verify_code(user, code):
     try:
-        r_code = redis_handle.get_code(str(user.id))
+        r_code = redis_handle.get_value(str(user.id), _type='string')
     except AttributeError:
         raise Exception('Please resend the veriflcation code.')
     if r_code == code:

@@ -59,7 +59,7 @@ class CodeApi(BaseAPI):
 
 
 @api.route('/api/v1/user', endpoint='user_add')
-@api.route('/api/v1/user/<string:id>')
+@api.route('/api/v1/user/<string:id>', endpoint='user_detail')
 class UserAPI(BaseAPI):
     @jwt_required()
     def get(self, id=None):
@@ -176,5 +176,5 @@ class UserAPI(BaseAPI):
         if current_user.role.permissions > user.role.permissions:
             user.confirmed = False
             user.save()
-            return util.api_response(data={'SUCCESS': True})
-        return util.api_response(data={'SUCCESS': False})
+            return util.api_response(data={'msg': 'success'})
+        return util.api_response(data={'msg': 'success'})
