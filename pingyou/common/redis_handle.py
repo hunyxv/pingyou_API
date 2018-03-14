@@ -11,3 +11,7 @@ def save_code(key, code):
 
 def get_code(key):
     return r.get(str(key)).decode('utf8')
+
+
+def exp_time(key):
+    return r.ttl(str(key))

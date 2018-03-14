@@ -7,7 +7,7 @@ from pingyou import db
 from pingyou.models.base_model import BaseModel
 
 
-class Project_detail(BaseModel, db.Document):
+class ProjectDetail(BaseModel, db.Document):
     name = db.StringField(required=True)
     project = db.ReferenceField('Project', required=True)
     department = db.ReferenceField('Department', required=True)
@@ -26,7 +26,7 @@ class Project_detail(BaseModel, db.Document):
     }
 
     def api_response(self):
-        data = {
+        return {
             'id': str(self.id),
             'name': self.name,
             'project': self.project.name,
@@ -39,7 +39,6 @@ class Project_detail(BaseModel, db.Document):
             'exp_date': time.mktime(
                 self.create_date + datetime.timedelta(days=self.exp))
         }
-        return jsonify({'data': data})
 
     def __repr__(self):
         return '<Project Detail %r>' % self.name

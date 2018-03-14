@@ -2,7 +2,7 @@ from .user import User, Role, Permission
 from .department import Department
 from ._class import _Class
 from .project import Project
-from .project_detail import Project_detail
+from .project_detail import ProjectDetail
 
 
 __all__ = [
@@ -12,5 +12,5 @@ __all__ = [
     'Department',
     '_Class',
     'Project',
-    'Project_detail',
+    'ProjectDetail',
 ]

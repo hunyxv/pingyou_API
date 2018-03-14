@@ -1,6 +1,6 @@
 import datetime
 
-from flask import request, current_app
+from flask import request
 from flask_jwt import JWTError, jwt_required
 from flask_restful import reqparse, inputs
 
@@ -8,8 +8,8 @@ from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.jwt_config import jwt
 from pingyou.service.user import get_current_user, permission_filter
-from pingyou.models import User, Department
-from pingyou.common import util, send_email
+from pingyou.models import User, Role
+from pingyou.common import util, send_email, redis_handle
 
 parser = reqparse.RequestParser()
 
@@ -51,10 +51,11 @@ class CodeApi(BaseAPI):
         :return: json
         """
         current_user = get_current_user()
-        code = util.generate_code(current_user)
-        context = {'username': current_user.name, "code": code}
-        send_email.send_email(current_user.email, "修改密码", context)
-        return util.api_response({'success': True})
+        if not redis_handle.exp_time(current_user.id):
+            code = util.generate_code(current_user)
+            context = {'username': current_user.name, "code": code}
+            send_email.send_email(current_user.email, "修改密码", context)
+            return util.api_response({'msg': 'success'})
 
 
 @api.route('/api/v1/user', endpoint='user_add')
@@ -135,13 +136,12 @@ class UserAPI(BaseAPI):
         current_user = get_current_user()
 
         if id == 'me':
-            if 'password' in data and 'code' in data:
-                print(data['code'], data['password'])
+            if 'password' in data and 'code' in data:  # 如果密码 和验证码 在传输的数据里 则是修改密码
                 if util.verify_code(current_user, data['code']):
                     current_user.password = data['password']
                     current_user.save()
-                    return util.api_response({'success': True})
-                return util.api_response({'success': False})
+                    return util.api_response({'msg': 'success'})
+                return util.api_response({'msg': 'failure'})
             data.pop('name', None)
             data.pop('department', None)
             data.pop('_class', None)
