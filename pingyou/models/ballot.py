@@ -3,7 +3,7 @@ from pingyou.models.base_model import BaseModel
 from pingyou.models import User
 
 
-class Ballot(BaseModel, db.Document):
+class Ballot(db.Document, BaseModel):
     project_detail = db.ReferenceField('ProjectDetail', required=True)
     people = db.ReferenceField('User', required=True)
     ballot_people = db.ListField(default=[])

@@ -11,8 +11,6 @@ from pingyou.service.user import get_current_user, permission_filter
 from pingyou.models import User, Role
 from pingyou.common import util, send_email, redis_handle
 
-parser = reqparse.RequestParser()
-
 
 @api.route('/api/v1/login', endpoint='login')
 class LoginAPI(BaseAPI):

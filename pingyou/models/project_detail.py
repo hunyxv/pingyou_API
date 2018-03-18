@@ -13,9 +13,10 @@ class ProjectDetail(BaseModel, db.Document):
     department = db.ReferenceField('Department', required=True)
     _class = db.ReferenceField('_Class', required=True)
     counselor = db.ReferenceField('User', required=True)
-    places = db.IntField(required=True)
-    status = db.BooleanField(default=False)
-    result = db.DictField()
+    places = db.IntField(required=True)      # 名额
+    participants = db.ListField(default=[])  # 申请人列表 存放 s_id
+    status = db.IntField(default=0)          # 0：投票未开始 1：开始投票 2：这个项目结束
+    result = db.ListField(default=[])        # 成功的人 列表
 
     exp = db.IntField(default=7)
     create_date = db.DateTimeField(default=datetime.datetime.now())
