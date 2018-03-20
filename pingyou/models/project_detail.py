@@ -5,6 +5,8 @@ from flask import jsonify
 
 from pingyou import db
 from pingyou.models.base_model import BaseModel
+from pingyou.models.ballot import User
+from pingyou.common import redis_handle
 
 
 class ProjectDetail(BaseModel, db.Document):
@@ -23,8 +25,14 @@ class ProjectDetail(BaseModel, db.Document):
 
     meta = {  # 'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
         'indexes': ['name'],
-        'collection': 'project'
+        'collection': 'project_detail'
     }
+
+    def initialize(self, num):
+        redis_handle.initialize(key=self.id, exp=self.exp)
+        user_list = User.objects(department=self.department, confirmed=True)
+        for user in user_list:
+            redis_handle.save_hash(key=self.id, field=user.id, value=num)
 
     def api_response(self):
         return {
@@ -38,7 +46,7 @@ class ProjectDetail(BaseModel, db.Document):
             'expiration': self.exp,
             'create_date': time.mktime(self.create_date.timetuple()),
             'exp_date': time.mktime(
-                self.create_date + datetime.timedelta(days=self.exp))
+                (self.create_date + datetime.timedelta(days=self.exp)).timetuple())
         }
 
     def __repr__(self):

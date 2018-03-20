@@ -4,6 +4,7 @@ from ._class import _Class
 from .project import Project
 from .project_detail import ProjectDetail
 from .ballot import Ballot
+from .score import Score
 
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     'Project',
     'ProjectDetail',
     'Ballot',
+    'Score'
 ]
