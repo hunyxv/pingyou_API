@@ -34,6 +34,13 @@ class ProjectDetail(BaseModel, db.Document):
         for user in user_list:
             redis_handle.save_hash(key=self.id, field=user.id, value=num)
 
+    def project_exp(self):
+        exp_date = self.create_date + datetime.timedelta(days=self.exp)
+        today = datetime.datetime.today()
+        if today > exp_date:
+            return False
+        return True
+
     def api_response(self):
         return {
             'id': str(self.id),

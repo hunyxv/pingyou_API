@@ -46,7 +46,7 @@ class BallotAPI(BaseAPI):
         project_detail = ProjectDetail.get_by_id(id=project_detail_id)
         me = get_current_user()
 
-        if project_detail and me.can(Permission.APPLY_PROJECT):
+        if project_detail and me.can(Permission.APPLY_PROJECT) and project_detail.project_exp:
             if not Ballot.objects(project_detail=project_detail, people=me).first():
                 month = [8, 9, 10, 11, 12]
                 term = ((datetime.date.today().year - me.enrollment_date.year) * 2 +
