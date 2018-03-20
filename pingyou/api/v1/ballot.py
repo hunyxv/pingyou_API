@@ -1,12 +1,12 @@
 import datetime
 
 from flask import request
-from flask_jwt import JWTError, jwt_required
-from flask_restful import reqparse, inputs
+from flask_jwt import jwt_required
+from flask_restful import reqparse
 
 from pingyou import api
 from pingyou.api.base import BaseAPI
-from pingyou.service.user import get_current_user, permission_filter
+from pingyou.service.user import get_current_user
 from pingyou.models import Ballot, ProjectDetail, Score, Permission
 from pingyou.common import util, redis_handle
 
@@ -46,7 +46,7 @@ class BallotAPI(BaseAPI):
         project_detail = ProjectDetail.get_by_id(id=project_detail_id)
         me = get_current_user()
 
-        if project_detail and me.can(Permission.APPLY_PROJECT) and project_detail.project_exp:
+        if me.can(Permission.APPLY_PROJECT) and project_detail.project_exp and project_detail.status == 1:
             if not Ballot.objects(project_detail=project_detail, people=me).first():
                 month = [8, 9, 10, 11, 12]
                 term = ((datetime.date.today().year - me.enrollment_date.year) * 2 +
