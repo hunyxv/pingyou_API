@@ -8,7 +8,7 @@ from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.jwt_config import jwt
 from pingyou.service.user import get_current_user, permission_filter
-from pingyou.models import User, Role
+from pingyou.models import User, Role,Department
 from pingyou.common import util, send_email, redis_handle
 
 
@@ -81,8 +81,9 @@ class UserAPI(BaseAPI):
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
             elif current_user.role.permissions == 0x33:
+                department_list = Department.objects(up_one_level=current_user.department)
                 user_list = User.objects(
-                    department=current_user.department).order_by('s_id')
+                    department__in=department_list).order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
             else:

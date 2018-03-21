@@ -1,6 +1,7 @@
 from .user import LoginAPI, UserAPI
 from .ballot import BallotAPI
 from .projectDetail import ProjectDetailAPI
+from .score import ScoreAPI
 
 
 __all__ = [
@@ -8,4 +9,5 @@ __all__ = [
     'UserAPI',
     'BallotAPI',
     'ProjectDetailAPI',
+    'ScoreAPI'
 ]

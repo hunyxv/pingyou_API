@@ -18,6 +18,8 @@ parser = reqparse.RequestParser()
 class BallotAPI(BaseAPI):
     @jwt_required()
     def get(self, id=None):
+        me = get_current_user()
+
         if not id:
             parser.add_argument('pdid', type=str, default=None)
 
@@ -27,10 +29,11 @@ class BallotAPI(BaseAPI):
                 raise ValueError('Id is not found!')
             project_detail = ProjectDetail.get_by_id(id=pdid)
             ballot_list = Ballot.objects(project_detail=project_detail)
-            data = [item.api_base_response() for item in ballot_list]
+            if me.role.permissions >= 0x33:
+                data = [item.api_response() for item in ballot_list]
+            else:
+                data = [item.api_base_response() for item in ballot_list]
             return util.api_response(data=data)
-
-        me = get_current_user()
 
         ballot = Ballot.get_by_id(id=id)
         if me.role.permissions >= 0x33:
@@ -45,13 +48,14 @@ class BallotAPI(BaseAPI):
 
         project_detail = ProjectDetail.get_by_id(id=project_detail_id)
         me = get_current_user()
-
+        # 有申请投票的权力 & 项目没过期 & 项目状态正在投票中
         if me.can(Permission.APPLY_PROJECT) and project_detail.project_exp and project_detail.status == 1:
             if not Ballot.objects(project_detail=project_detail, people=me).first():
                 month = [8, 9, 10, 11, 12]
                 term = ((datetime.date.today().year - me.enrollment_date.year) * 2 +
-                        [1 if datetime.date.today().year in month else 0][0])
+                        [1 if datetime.date.today().month in month else 0][0])
                 source = Score.objects(student_id=me.s_id, term=term-1).first()
+                # 上学期没有 挂科和记过 的记录
                 if not source.guake and not source.jiguo:
                     ballot = Ballot(project_detail=project_detail, people=me)
                     ballot.save()

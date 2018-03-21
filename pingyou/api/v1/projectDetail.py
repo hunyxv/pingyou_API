@@ -87,6 +87,6 @@ class ProjectDetailAPI(BaseAPI):
 
         project_detail = ProjectDetail.get_by_id(id=id)
 
-        project_detail.status = 3
+        project_detail.status = 2
         project_detail.save()
         return util.api_response(data={'msg': 'success'})

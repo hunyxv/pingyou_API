@@ -36,6 +36,7 @@ class Ballot(BaseModel, db.Document):
                 'id': str(self.project_detail.id),
                 'name': self.project_detail.name
             },
+            'ballot_people': [],
             'number': self.number
         }
 
