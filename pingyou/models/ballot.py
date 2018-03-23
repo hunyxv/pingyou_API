@@ -1,7 +1,6 @@
 from pingyou import db
 from pingyou.models.base_model import BaseModel
 from pingyou.models import User
-from pingyou.common.redis_handle import save_hash
 
 
 class Ballot(BaseModel, db.Document):

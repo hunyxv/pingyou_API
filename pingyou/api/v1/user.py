@@ -2,7 +2,6 @@ import datetime
 
 from flask import request
 from flask_jwt import JWTError, jwt_required
-from flask_restful import reqparse, inputs
 
 from pingyou import api
 from pingyou.api.base import BaseAPI
