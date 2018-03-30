@@ -11,6 +11,9 @@ class _Class(BaseModel, db.Document):
         'indexes': ['name'],
         'collection': 'class'}
 
+    def __init__(self, **kwargs):
+        super(_Class, self).__init__(**kwargs)
+
     @classmethod
     def query(cls, n):
         if n == 0:
@@ -19,10 +22,10 @@ class _Class(BaseModel, db.Document):
         return _class
 
     def api_response(self):
-        return jsonify({
+        return {
             'id': str(self.id),
             'name': self.name,
-        })
+        }
 
     def __repr__(self):
         return '<Class %r>' % self.name

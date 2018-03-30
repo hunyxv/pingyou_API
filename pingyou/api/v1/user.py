@@ -28,8 +28,9 @@ class LoginAPI(BaseAPI):
 
         identity = jwt.authentication_callback(username_sid, password)
         if identity and identity.confirmed:
-            if identity.role.permissions >= 0x33 or (identity.enrollment_date +
-                                                     datetime.timedelta(days=365 * 4) > datetime.datetime.today()):
+            if identity.role.permissions >= 0x33 or \
+                    (identity.enrollment_date +
+                     datetime.timedelta(days=365 * 4) > datetime.datetime.today()):
                 access_token = jwt.jwt_encode_callback(identity)
                 return jwt.auth_response_callback(access_token, identity)
             identity.confirmed = False
@@ -81,34 +82,58 @@ class UserAPI(BaseAPI):
                 return util.api_response(data=data)
             elif current_user.role.permissions == 0x33:
                 department_list = Department.objects(up_one_level=current_user.department)
-                user_list = User.objects(
-                    department__in=department_list).order_by('s_id')
+                user_list = User.objects(department__in=department_list,
+                                         confirmed=True).order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
             else:
                 user_list = User.objects(
                     department=current_user.department,
-                    _class=current_user._class).order_by('s_id')
+                    _class=current_user._class,
+                    confirmed = True).order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
 
     @jwt_required()
     @permission_filter(0x33)
-    def post(self):
+    def post(self, id=None):
         """
         创建用户
         只有辅导员以上级别能创建
         :return:
         """
         # current_user = get_current_user()
-
         data = request.get_json()
-        # username = data['username'].strip()
-        password = data['password'].strip()
+        print(data)
         name = data.get('name', '请填写')
-        s_id = data['s_id']
         department = data['department']
-        _class = data['_class']
+        _class = data['class']
+        password = data.get('password', 'password')
+
+        if id == 'all':
+            num = data.get('num', 0)
+            start_sid = int(data.get('start_sid'))
+            criterion = [department, _class, num, start_sid,password]
+            print(start_sid)
+
+            if all(criterion):
+                new_user_list = []
+                for s_id in range(start_sid, start_sid + num):
+                    if not User.objects(s_id=s_id):
+                        user = User(
+                            name=name,
+                            s_id=s_id,
+                            department=department,
+                            _class=_class
+                        )
+                        user.password = password
+                        user.save()
+                        new_user_list.append(user.api_response())
+                return util.api_response(data=new_user_list)
+            return util.api_response({'msg': '请补全信息'})
+
+        # username = data['username'].strip()
+        s_id = data['s_id']
 
         user = User(
             name=name,
@@ -138,9 +163,10 @@ class UserAPI(BaseAPI):
                 if util.verify_code(current_user, data['code']):
                     current_user.password = data['password']
                     current_user.save()
-                    return util.api_response({'msg': 'success'})
-                return util.api_response({'msg': 'failure'})
-            data.pop('name', None)
+                # return util.api_response({'msg': 'success'})
+                # return util.api_response({'msg': 'failure'})
+            if current_user.role.permissions < 0x0f:
+                data.pop('name', None)
             data.pop('department', None)
             data.pop('_class', None)
             data.pop('role', None)
@@ -148,12 +174,13 @@ class UserAPI(BaseAPI):
             return util.api_response(current_user.api_response())
 
         user = User.get_by_id(id=id)
-        if (current_user.role.permissions == 0x0f and
+        if (current_user.role.permissions >= 0x0f and
                 current_user.department == user.department and
                 current_user._class == user._class):  # 班长
             user.update_info(name=data['name'])
             return util.api_response(user.api_response())
-        elif current_user.role.permissions > user.role.permissions:
+        elif current_user.role.permissions >= 0x33:
+            print(data)
             user.update_info(**data)
             return util.api_response(user.api_response())
         raise Exception("User don't have permissionro change!")

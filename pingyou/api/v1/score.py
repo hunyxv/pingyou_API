@@ -13,7 +13,7 @@ from pingyou.common import util, redis_handle
 parser = reqparse.RequestParser()
 
 
-@api.route('/api/v1/score/', endpoint='score_all')
+@api.route('/api/v1/score', endpoint='score_all')
 @api.route('/api/v1/score/<string:id>', endpoint='score')
 class ScoreAPI(BaseAPI):
     @jwt_required()

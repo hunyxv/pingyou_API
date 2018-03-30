@@ -17,7 +17,7 @@ class ProjectDetail(BaseModel, db.Document):
     counselor = db.ReferenceField('User', required=True)
     places = db.IntField(required=True)      # 名额
     participants = db.ListField(default=[])  # 申请人列表 存放 s_id
-    status = db.IntField(default=0)          # 0：投票未开始 1：开始投票 2：这个项目结束
+    status = db.IntField(default=0)          # 0：投票未开始 1：开始投票 2：这个项目结束 3: 删除或作废
     result = db.ListField(default=[])        # 成功的人 列表
 
     exp = db.IntField(default=7)
@@ -38,6 +38,13 @@ class ProjectDetail(BaseModel, db.Document):
         user_list = User.objects(department=self.department, confirmed=True)
         for user in user_list:
             redis_handle.save_hash(key=self.id, field=user.id, value=num)
+
+    def filter(self):
+        if self.create_date + datetime.timedelta(days=365*2) > datetime.datetime.today():
+            return True
+        self.status = 3
+        self.save()
+        return False
 
     def project_exp(self):
         exp_date = self.create_date + datetime.timedelta(days=self.exp)
@@ -69,9 +76,18 @@ class ProjectDetail(BaseModel, db.Document):
         return {
             'id': str(self.id),
             'name': self.name,
-            'project': self.project.name,
-            'department': self.department.name,
-            'class': self._class.name,
+            'project': {
+                'id': str(self.project.id),
+                'name': self.project.name
+            },
+            'department': {
+                'id': str(self.department.id),
+                'name':self.department.name
+            },
+            'class': {
+                'id': str(self._class.id),
+                'name': self._class.name
+            },
             'counselor': self.counselor.name,
             'places': self.places,
             'expiration': self.exp,

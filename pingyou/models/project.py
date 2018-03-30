@@ -12,10 +12,10 @@ class Project(BaseModel, db.Document):
     }
 
     def api_response(self):
-        return jsonify({
+        return {
             'id': str(self.id),
             'name': self.name,
-        })
+        }
 
     def __repr__(self):
         return '<Project %r>' % self.name

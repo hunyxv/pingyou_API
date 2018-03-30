@@ -106,7 +106,13 @@ class User(BaseModel, db.Document):
                 self.enrollment_date = datetime.datetime.max
             if self.role is None:
                 self.role = Role.objects(default=True).first()
-        self.username = 'XK' + str(self.s_id)
+        if self.username is None:
+            self.username = 'XK' + str(self.s_id)
+        if (self.role.permissions < 0x33 and
+                self.enrollment_date +datetime.timedelta(days=365 * 4)
+                < datetime.datetime.today()):
+            self.confirmed = False
+
 
     def can(self, permissions):
         return self.role is not None and (
@@ -128,13 +134,14 @@ class User(BaseModel, db.Document):
         if 'name' in kwargs:
             self.name = util.clear_str(kwargs['name'])
         if 'username' in kwargs:
-            self.username = util.clear_str(kwargs['name'])
+            self.username = util.clear_str(kwargs['username'])
         if 'confirmed' in kwargs:
             self.confirmed = kwargs['confirmed']
         if 'role' in kwargs:
-            role = Role.get_by_id(id=kwargs['role'])
-            if role.permissions < 0x33:
-                self.role = role
+            if kwargs['role'] == 0:
+                self.role = Role.objects(name='Student').first()
+            else:
+                self.role = Role.objects(name='Monitor').first()
         if 'gender' in kwargs:
             self.gender = kwargs['gender']
         if 'department' in kwargs:
@@ -172,6 +179,7 @@ class User(BaseModel, db.Document):
             'id': str(self.id),
             'username': self.username,
             'role': self.role.name,
+            'confirmed': self.confirmed,
             'gender': self.gender,
             'department': self.department.name,
             'class': self._class.name
