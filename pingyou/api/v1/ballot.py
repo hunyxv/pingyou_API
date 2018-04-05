@@ -28,7 +28,7 @@ class BallotAPI(BaseAPI):
             if not pdid:
                 raise ValueError('Id is not found!')
             project_detail = ProjectDetail.get_by_id(id=pdid)
-            ballot_list = Ballot.objects(project_detail=project_detail, flag=True).order_by('number')
+            ballot_list = Ballot.objects(project_detail=project_detail, flag=True).order_by('-number')
             if me.role.permissions >= 0x33:
                 data = [item.api_response() for item in ballot_list]
             else:

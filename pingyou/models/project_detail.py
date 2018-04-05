@@ -69,6 +69,8 @@ class ProjectDetail(BaseModel, db.Document):
             self.places = data['exp']
         if 'status' in data:
             self.status = data['status']
+        if 'result' in data:
+            self.result = data['result']
 
         self.save()
 

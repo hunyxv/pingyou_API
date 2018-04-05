@@ -2,12 +2,12 @@ import datetime
 
 from flask import request
 from flask_jwt import jwt_required
-from flask_restful import reqparse, inputs
+from flask_restful import reqparse
 
 from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.service.user import get_current_user, permission_filter
-from pingyou.models import ProjectDetail, _Class, Permission, Department
+from pingyou.models import ProjectDetail, Department, Ballot
 from pingyou.common import util, redis_handle
 
 parser = reqparse.RequestParser()
@@ -103,11 +103,15 @@ class ProjectDetailAPI(BaseAPI):
         project_detail = ProjectDetail.get_by_id(id=id)
 
         data = request.get_json()
+        if 'status' in data and data['status'] == 3:
+            ballot_list = Ballot.objects(project_detail=project_detail).order_by('-number')
+            data['result'] = [item.people.s_id for item in ballot_list[:project_detail.places]]
+        print(data['result'])
         if me.role.name == 'Monitor' and (len(data) != 1 or 'status' not in data) :
             return util.api_response({'msg': 'you can not change!'})
 
         project_detail.update(data)
-        return util.api_response(data=project_detail.api_response())
+        return util.api_response(data={'msg': 'success'})
 
     @jwt_required()
     @permission_filter(0x33)
