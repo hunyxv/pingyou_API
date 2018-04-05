@@ -82,16 +82,18 @@ class UserAPI(BaseAPI):
                 return util.api_response(data=data)
             elif current_user.role.permissions == 0x33:
                 department_list = Department.objects(up_one_level=current_user.department)
-                user_list = User.objects(department__in=department_list,
-                                         confirmed=True).order_by('s_id')
+                user_list = User.objects(
+                    department__in=department_list,
+                    confirmed=True).order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
             else:
                 user_list = User.objects(
                     department=current_user.department,
                     _class=current_user._class,
-                    confirmed = True).order_by('s_id')
-                data = [item.api_response() for item in user_list]
+                    confirmed=True,
+                ).order_by('s_id')
+                data = [item.api_response() for item in user_list if item.period == current_user.period]
                 return util.api_response(data=data)
 
     @jwt_required()
@@ -104,7 +106,6 @@ class UserAPI(BaseAPI):
         """
         # current_user = get_current_user()
         data = request.get_json()
-        print(data)
         name = data.get('name', '请填写')
         department = data['department']
         _class = data['class']

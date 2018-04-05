@@ -81,6 +81,7 @@ class User(BaseModel, db.Document):
             'Female',
             'Secret'],
         default='Secret')
+    period = db.IntField()
     department = db.ReferenceField('Department', required=True, max_length=50)
     _class = db.ReferenceField('_Class')
     email = db.EmailField()
@@ -112,6 +113,8 @@ class User(BaseModel, db.Document):
                 self.enrollment_date +datetime.timedelta(days=365 * 4)
                 < datetime.datetime.today()):
             self.confirmed = False
+        if self.period is None:
+            self.period = self.s_id//1000000
 
 
     def can(self, permissions):
@@ -167,6 +170,7 @@ class User(BaseModel, db.Document):
             's_id': self.s_id,
             'confirmed': self.confirmed,
             'gender': self.gender,
+            'period': self.period,
             'department': self.department.name,
             'class': self._class.name,
             'email': self.email,

@@ -17,10 +17,13 @@ class Ballot(BaseModel, db.Document):
 
     def __init__(self, **kwargs):
         super(Ballot, self).__init__(**kwargs)
+        if self.project_detail.status >=3:
+            self.flag = False
+            self.save()
 
 
     def update_number(self):
-        if not self.project_detail.status:
+        if self.project_detail.status == 1:
             self.number += 1
             self.save()
 
@@ -35,7 +38,7 @@ class Ballot(BaseModel, db.Document):
                 'id': str(self.project_detail.id),
                 'name': self.project_detail.name
             },
-            'ballot_people': [],
+            'ballot_people': self.ballot_people,
             'number': self.number
         }
 

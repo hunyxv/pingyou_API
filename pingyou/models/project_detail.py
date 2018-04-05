@@ -1,8 +1,6 @@
 import time
 import datetime
 
-from flask import jsonify
-
 from pingyou import db
 from pingyou.models.base_model import BaseModel
 from pingyou.models import User,Project
@@ -17,7 +15,7 @@ class ProjectDetail(BaseModel, db.Document):
     counselor = db.ReferenceField('User', required=True)
     places = db.IntField(required=True)      # 名额
     participants = db.ListField(default=[])  # 申请人列表 存放 s_id
-    status = db.IntField(default=0)          # 0：投票未开始 1：开始投票 2：这个项目结束 3: 删除或作废
+    status = db.IntField(default=0)          # 0：投票未开始 1：开始投票 2：待审核 3: 结束 4：作废或删除
     result = db.ListField(default=[])        # 成功的人 列表
 
     exp = db.IntField(default=7)
@@ -42,17 +40,17 @@ class ProjectDetail(BaseModel, db.Document):
     def filter(self):
         if self.create_date + datetime.timedelta(days=365*2) > datetime.datetime.today():
             return True
-        self.status = 3
+        self.status = 4
         self.save()
         return False
 
     def project_exp(self):
         exp_date = self.create_date + datetime.timedelta(days=self.exp)
         today = datetime.datetime.today()
-        if self.status == 2:
+        if self.status == 3:
             return False
         if today > exp_date:
-            self.status = 2
+            self.status = 3
             self.save()
             return False
         return True
@@ -69,6 +67,8 @@ class ProjectDetail(BaseModel, db.Document):
             self.places = data['place']
         if 'exp' in data:
             self.places = data['exp']
+        if 'status' in data:
+            self.status = data['status']
 
         self.save()
 
@@ -92,6 +92,7 @@ class ProjectDetail(BaseModel, db.Document):
             'places': self.places,
             'expiration': self.exp,
             'create_date': time.mktime(self.create_date.timetuple()),
+            'participants': self.participants,
             'status': self.status,
             'result': self.result
         }

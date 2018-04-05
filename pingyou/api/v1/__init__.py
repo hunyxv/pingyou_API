@@ -6,6 +6,8 @@ from ._class import ClassAPI
 from .department import DepartmentAPI
 from .news import NewsAPI
 from .project import ProjectAPI
+from .start_end_ballot import StartBallot
+from .chat_message import ChatMessageAPI
 
 
 __all__ = [
@@ -17,5 +19,7 @@ __all__ = [
     'ClassAPI',
     'DepartmentAPI',
     'NewsAPI',
-    'ProjectAPI'
+    'ProjectAPI',
+    'StartBallot',
+    'ChatMessageAPI'
 ]

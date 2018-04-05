@@ -6,6 +6,7 @@ from .project_detail import ProjectDetail
 from .ballot import Ballot
 from .score import Score
 from .news import News
+from .chat_message import ChatMessages
 
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     'ProjectDetail',
     'Ballot',
     'Score',
-    'News'
+    'News',
+    'ChatMessages'
 ]

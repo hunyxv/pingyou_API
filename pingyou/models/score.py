@@ -5,6 +5,7 @@ from pingyou.models.base_model import BaseModel
 class Score(db.Document, BaseModel):
     student = db.ReferenceField('User')
     term = db.IntField(choices=[1, 2, 3, 4, 5, 6, 7, 8])
+    score = db.FloatField()
     guake = db.BooleanField(default=False)
     jiguo = db.BooleanField(default=False)
 

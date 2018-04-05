@@ -21,15 +21,19 @@ class ProjectDetailAPI(BaseAPI):
         if not id:
             parser.add_argument('page', type=int, default=1)
             parser.add_argument('page_size', type=int, default=8)
+            parser.add_argument('status', type=int, default=None)
             args = parser.parse_args()
 
             page = args.get('page')
             page_size = args.get('page_size')
+            status = args.get('status')
 
             me = get_current_user()
             if me.role.permissions >= 0x33:
                 department_list = Department.objects(up_one_level=me.department)
-                query = {'department__in': department_list, 'status__ne': 3}
+                query = {'department__in': department_list, 'status__ne': 4}
+                if status:
+                    query = {'department__in': department_list, 'status': status}
                 project_detailList = util.paging(
                     cls=ProjectDetail,
                     page=page,
@@ -38,7 +42,12 @@ class ProjectDetailAPI(BaseAPI):
                     order_by=['-create_date']
                 )
             else:
-                query = {'department': me.department, '_class': me._class, 'status__ne': 3}
+                if status is not None:
+                    if ProjectDetail.objects(department= me.department, _class= me._class, status= 1):
+                        status = 1
+                    query = {'department': me.department, '_class': me._class, 'status': status}
+                else:
+                    query = {'department': me.department, '_class': me._class, 'status__ne': 4}
                 project_detailList = util.paging(
                     cls=ProjectDetail,
                     page=page,
@@ -67,9 +76,7 @@ class ProjectDetailAPI(BaseAPI):
         _class_list = data['class_list']
         places = data['places']
         exp = data['exp']
-        print(name, project_id, department_list, _class_list)
         my_departments = [str(item.id) for item in Department.objects(up_one_level=me.department)]
-        print(my_departments)
 
         for department in department_list:
             if department in my_departments:
@@ -89,14 +96,16 @@ class ProjectDetailAPI(BaseAPI):
         return util.api_response(data={'msg': 'success'})
 
     @jwt_required()
-    @permission_filter(0x33)
     def put(self, id=None):
         if not id:
             raise ValueError('Id is not find!')
-
+        me = get_current_user()
         project_detail = ProjectDetail.get_by_id(id=id)
 
         data = request.get_json()
+        if me.role.name == 'Monitor' and (len(data) != 1 or 'status' not in data) :
+            return util.api_response({'msg': 'you can not change!'})
+
         project_detail.update(data)
         return util.api_response(data=project_detail.api_response())
 
@@ -108,6 +117,6 @@ class ProjectDetailAPI(BaseAPI):
 
         project_detail = ProjectDetail.get_by_id(id=id)
 
-        project_detail.status = 3
+        project_detail.status = 4
         project_detail.save()
         return util.api_response(data={'msg': 'success'})
