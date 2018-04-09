@@ -10,6 +10,7 @@ def mail_generator(template: str, format_map: dict) -> str:
 
 
 def send_email(to, subject, context, **kwargs):
+    print(to)
     msg = Message(
         current_app.config['FLASKY_MAIL_SUBJECT_PREFIX'] +
         subject,

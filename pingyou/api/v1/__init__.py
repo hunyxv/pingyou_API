@@ -8,6 +8,8 @@ from .news import NewsAPI
 from .project import ProjectAPI
 from .start_end_ballot import StartBallot
 from .chat_message import ChatMessageAPI
+from .wechat import WeChatAPI
+from .upload_score import UpdateAPI
 
 
 __all__ = [
@@ -21,5 +23,7 @@ __all__ = [
     'NewsAPI',
     'ProjectAPI',
     'StartBallot',
-    'ChatMessageAPI'
+    'ChatMessageAPI',
+    'WeChatAPI',
+    'UpdateAPI'
 ]

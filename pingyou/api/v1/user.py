@@ -39,7 +39,7 @@ class LoginAPI(BaseAPI):
             raise JWTError('Bad Request', 'Invalid credentials')
 
 
-@api.route('/api/v1/code', endpoint='code')
+@api.route('/api/v1/sendcode', endpoint='code')
 class CodeApi(BaseAPI):
     @jwt_required()
     def get(self):
@@ -49,11 +49,13 @@ class CodeApi(BaseAPI):
         :return: json
         """
         current_user = get_current_user()
-        if not redis_handle.exp_time(current_user.id):
+        print(current_user.email)
+        if not redis_handle.exp_time(current_user.id) and current_user.email:
             code = util.generate_code(current_user)
             context = {'username': current_user.name, "code": code}
             send_email.send_email(current_user.email, "修改密码", context)
             return util.api_response({'msg': 'success'})
+        return util.api_response({'msg': 'uer email is null'})
 
 
 @api.route('/api/v1/user', endpoint='user_add')

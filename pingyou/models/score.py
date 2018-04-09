@@ -25,8 +25,10 @@ class Score(db.Document, BaseModel):
     def api_response(self):
         return {
             'id': str(self.id),
-            'student': self.student.name,
+            's_id': self.student.s_id,
+            'name': self.student.name,
             'term': self.term,
+            'score': self.score,
             'guake': self.guake,
             'jiguo': self.jiguo
         }
