@@ -8,6 +8,7 @@ class Ballot(BaseModel, db.Document):
     people = db.ReferenceField('User', required=True)
     ballot_people = db.ListField(default=[])
     number = db.IntField(default=0)
+    integration = db.FloatField(defautl=0)
     flag = db.BooleanField(default=True)
 
     meta = {  # 'db_alias': 'pingyou',  # 在config 的数据库配置中没有配置数据库名时设置
@@ -38,6 +39,7 @@ class Ballot(BaseModel, db.Document):
                 'id': str(self.project_detail.id),
                 'name': self.project_detail.name
             },
+            'integration':self.integration,
             'ballot_people': self.ballot_people,
             'number': self.number
         }
@@ -53,6 +55,7 @@ class Ballot(BaseModel, db.Document):
                 'id': str(self.project_detail.id),
                 'name': self.project_detail.name
             },
+            'integration': self.integration,
             'ballot_people': [User.get_by_sid(sid=item).name
                               for item in self.ballot_people],
             'number': self.number

@@ -7,7 +7,7 @@ from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.jwt_config import jwt
 from pingyou.service.user import get_current_user, permission_filter
-from pingyou.models import User, Role,Department
+from pingyou.models import User, Role,Department, _Class
 from pingyou.common import util, send_email, redis_handle
 
 
@@ -79,7 +79,8 @@ class UserAPI(BaseAPI):
             return util.api_response(user.api_base_response())
         else:
             if current_user.role.permissions == 0xff:
-                user_list = User.objects().order_by('sid').order_by('s_id')
+                counselor = Role.objects(permissions=0x33).first()
+                user_list = User.objects(role=counselor).order_by('sid').order_by('s_id')
                 data = [item.api_response() for item in user_list]
                 return util.api_response(data=data)
             elif current_user.role.permissions == 0x33:
@@ -108,16 +109,16 @@ class UserAPI(BaseAPI):
         """
         # current_user = get_current_user()
         data = request.get_json()
+        class_ = _Class.objects(name='<无>').first()
         name = data.get('name', '请填写')
         department = data['department']
-        _class = data['class']
+        _class = data.get('class', class_)
         password = data.get('password', 'password')
 
         if id == 'all':
-            num = data.get('num', 0)
+            num = data.get('num', 1)
             start_sid = int(data.get('start_sid'))
             criterion = [department, _class, num, start_sid,password]
-            print(start_sid)
 
             if all(criterion):
                 new_user_list = []

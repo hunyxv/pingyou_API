@@ -17,6 +17,8 @@ class DepartmentAPI(BaseAPI):
         if me.role.permissions == 0x33:
             departent_list = Department.objects(up_one_level=me.department)
             data = [item.api_response() for item in departent_list]
+        elif me.role.permissions == 0xff:
+            data = [item.api_response() for item in Department.objects()]
         else:
             data = [me.department.api_response()]
         return util.api_response(data=data)
@@ -32,6 +34,21 @@ class DepartmentAPI(BaseAPI):
 
         new_department.save()
         return util.api_response(data={'msg': 'success'})
+
+    @jwt_required()
+    @permission_filter(0xff)
+    def put(self, id=None):
+        if not id:
+            raise ValueError('Not find id!')
+        department = Department.get_by_id(id=id)
+        data = request.get_json()
+
+        if 'name' in data:
+            department.name = data['name']
+            department.save()
+            return util.api_response(data={'msg': 'success'})
+        return util.api_response(data={'msg': 'not data'})
+
 
     @jwt_required()
     @permission_filter(0xff)

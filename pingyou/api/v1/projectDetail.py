@@ -1,6 +1,6 @@
 import datetime
 
-from flask import request
+from flask import request, send_file
 from flask_jwt import jwt_required
 from flask_restful import reqparse
 
@@ -8,7 +8,7 @@ from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.service.user import get_current_user, permission_filter
 from pingyou.models import ProjectDetail, Department, Ballot
-from pingyou.common import util, redis_handle
+from pingyou.common import util, redis_handle, exceltable
 
 parser = reqparse.RequestParser()
 
@@ -106,7 +106,16 @@ class ProjectDetailAPI(BaseAPI):
         if 'status' in data and data['status'] == 3:
             ballot_list = Ballot.objects(project_detail=project_detail).order_by('-number')
             data['result'] = [item.people.s_id for item in ballot_list[:project_detail.places]]
-        print(data['result'])
+            project_detail.update(data)
+
+            data = [['姓名', '项目名', '得票数', '总积分']]
+            for ballot in ballot_list[:project_detail.places]:
+                row = [ballot.people.name, project_detail.name, ballot.number, ballot.integration]
+                data.append(row)
+            filename = exceltable.writeExcel(data=data)
+
+            return util.api_response(data={'msg': filename})
+
         if me.role.name == 'Monitor' and (len(data) != 1 or 'status' not in data) :
             return util.api_response({'msg': 'you can not change!'})
 

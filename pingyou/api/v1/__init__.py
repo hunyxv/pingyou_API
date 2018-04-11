@@ -6,10 +6,11 @@ from ._class import ClassAPI
 from .department import DepartmentAPI
 from .news import NewsAPI
 from .project import ProjectAPI
-from .start_end_ballot import StartBallot
+from .start_end_ballot import StartBallot, EndBallot
 from .chat_message import ChatMessageAPI
 from .wechat import WeChatAPI
 from .upload_score import UpdateAPI
+from .download import DownLoadAPI
 
 
 __all__ = [
@@ -25,5 +26,7 @@ __all__ = [
     'StartBallot',
     'ChatMessageAPI',
     'WeChatAPI',
-    'UpdateAPI'
+    'UpdateAPI',
+    'EndBallot',
+    'DownLoadAPI'
 ]

@@ -22,11 +22,12 @@ class ClassAPI(BaseAPI):
     def post(self):
         data = request.get_json()
         name = data.get('class')
+        if _Class.objects(name=name):
+            new_class = _Class(name=name)
 
-        new_class = _Class(name=name)
-
-        new_class.save()
-        return util.api_response(data={'msg': 'success'})
+            new_class.save()
+            return util.api_response(data={'msg': 'success'})
+        return util.api_response(data={'msg': 'already have'})
 
     @jwt_required()
     @permission_filter(0xff)

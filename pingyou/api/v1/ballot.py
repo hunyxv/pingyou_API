@@ -28,7 +28,10 @@ class BallotAPI(BaseAPI):
             if not pdid:
                 raise ValueError('Id is not found!')
             project_detail = ProjectDetail.get_by_id(id=pdid)
-            ballot_list = Ballot.objects(project_detail=project_detail, flag=True).order_by('-number')
+            if me.role.permissions == 0x33:
+                ballot_list = Ballot.objects(project_detail=project_detail, flag=True).order_by('-integration','-number')
+            else:
+                ballot_list = Ballot.objects(project_detail=project_detail, flag=True).order_by('-number')
             if me.role.permissions >= 0x33:
                 data = [item.api_response() for item in ballot_list]
             else:
@@ -63,9 +66,9 @@ class BallotAPI(BaseAPI):
                     ballot = Ballot(project_detail=project_detail, people=me)
                     ballot.save()
                     return util.api_response(data={'msg': "success"})
-                return util.api_response(data={'msg': "You can't apply for it "})
+                return util.api_response(data={'msg': "没有达到申请要求 "})
             return util.api_response(data={'msg': "you already apply for it"})
-        return util.api_response(data={'msg': "You can't apply for it "})
+        return util.api_response(data={'msg': "没有达到申请要求"})
 
     @jwt_required()
     def put(self, id=None):

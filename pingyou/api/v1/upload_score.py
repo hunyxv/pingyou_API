@@ -51,12 +51,18 @@ class UpdateAPI(BaseAPI):
         # (id , name, term, score, guake, jiguo)
         for row in values[1:]:
             student = User.objects(s_id=row[0]).first()
-            if student and not Score.objects(student=student, term=row[2]):
-                score = Score(student=student,
-                              term=row[2], score=row[3],
-                              guake=[False if row[4] == 'N' or row[4] == 'n' else True][0],
-                              jiguo=[False if row[5] == 'N' or row[5] == 'n' else True][0]
-                              )
+            if student:
+                score = Score.objects(student=student, term=row[2]).first()
+                if score:
+                    score.score = row[3]
+                    score.guake=[False if row[4] == 'N' or row[4] == 'n' else True][0]
+                    score.jiguo=[False if row[5] == 'N' or row[5] == 'n' else True][0]
+                else:
+                    score = Score(student=student,
+                                  term=row[2], score=row[3],
+                                  guake=[False if row[4] == 'N' or row[4] == 'n' else True][0],
+                                  jiguo=[False if row[5] == 'N' or row[5] == 'n' else True][0]
+                                  )
                 score.save()
 
         return util.api_response(data={'msg': 'success'})
