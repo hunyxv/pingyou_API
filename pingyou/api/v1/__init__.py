@@ -11,6 +11,7 @@ from .chat_message import ChatMessageAPI
 from .wechat import WeChatAPI
 from .upload_score import UpdateAPI
 from .download import DownLoadAPI
+from .statistics import StatAPI
 
 
 __all__ = [
@@ -28,5 +29,6 @@ __all__ = [
     'WeChatAPI',
     'UpdateAPI',
     'EndBallot',
-    'DownLoadAPI'
+    'DownLoadAPI',
+    'StatAPI'
 ]

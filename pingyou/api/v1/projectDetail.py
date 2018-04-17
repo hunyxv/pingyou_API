@@ -1,6 +1,6 @@
 import datetime
 
-from flask import request, send_file
+from flask import request
 from flask_jwt import jwt_required
 from flask_restful import reqparse
 
@@ -8,7 +8,7 @@ from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.service.user import get_current_user, permission_filter
 from pingyou.models import ProjectDetail, Department, Ballot
-from pingyou.common import util, redis_handle, exceltable
+from pingyou.common import util, exceltable
 
 parser = reqparse.RequestParser()
 
@@ -22,6 +22,7 @@ class ProjectDetailAPI(BaseAPI):
             parser.add_argument('page', type=int, default=1)
             parser.add_argument('page_size', type=int, default=8)
             parser.add_argument('status', type=int, default=None)
+
             args = parser.parse_args()
 
             page = args.get('page')
@@ -70,28 +71,36 @@ class ProjectDetailAPI(BaseAPI):
         me = get_current_user()
         data = request.get_json()
 
+        year = datetime.datetime.today().year
+        period = [year - 4, year - 3, year - 2, year - 1]
+        if datetime.datetime.today().month in [9, 10, 11, 12]:
+            period.append(year)
+
         name = data['name']
         project_id = data['project']
         department_list = data['department_list']
         _class_list = data['class_list']
         places = data['places']
+        periods = data.get('period_list', period)
         exp = data['exp']
         my_departments = [str(item.id) for item in Department.objects(up_one_level=me.department)]
 
-        for department in department_list:
-            if department in my_departments:
-                for _class in _class_list:
+        for period in periods:
+            for department in department_list:
+                if department in my_departments:
+                    for _class in _class_list:
 
-                    new_project_detail = ProjectDetail(
-                        name=name,
-                        project=project_id,
-                        department=department,
-                        _class=_class,
-                        counselor=me,
-                        places=places,
-                        exp=[exp if exp else 7][0]
-                    )
-                    new_project_detail.save()
+                        new_project_detail = ProjectDetail(
+                            name=name,
+                            project=project_id,
+                            department=department,
+                            _class=_class,
+                            counselor=me,
+                            places=places,
+                            period=period,
+                            exp=[exp if exp else 7][0]
+                        )
+                        new_project_detail.save()
 
         return util.api_response(data={'msg': 'success'})
 

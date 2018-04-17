@@ -1,11 +1,14 @@
 from flask import request
 from flask_jwt import jwt_required
+from flask_restful import reqparse
 
 from pingyou import api
 from pingyou.api.base import BaseAPI
 from pingyou.service.user import permission_filter, get_current_user
 from pingyou.models import Department
 from pingyou.common import util
+
+parser = reqparse.RequestParser()
 
 
 @api.route('/api/v1/department', endpoint='department')
@@ -14,14 +17,22 @@ class DepartmentAPI(BaseAPI):
     @jwt_required()
     def get(self):
         me = get_current_user()
-        if me.role.permissions == 0x33:
-            departent_list = Department.objects(up_one_level=me.department)
-            data = [item.api_response() for item in departent_list]
-        elif me.role.permissions == 0xff:
-            data = [item.api_response() for item in Department.objects()]
+        parser.add_argument('item', type=str, default=None)
+        args = parser.parse_args()
+        item = args['item']
+        if not item:
+            if me.role.permissions == 0x33:
+                departent_list = Department.objects(up_one_level=me.department)
+                data = [item.api_response() for item in departent_list]
+            elif me.role.permissions == 0xff:
+                data = [item.api_response() for item in Department.objects()]
+            else:
+                data = [me.department.api_response()]
+
         else:
-            data = [me.department.api_response()]
+            data = [item.api_response() for item in Department.objects()]
         return util.api_response(data=data)
+
 
     @jwt_required()
     @permission_filter(0xff)

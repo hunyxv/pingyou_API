@@ -12,6 +12,7 @@ class ProjectDetail(BaseModel, db.Document):
     project = db.ReferenceField('Project', required=True)
     department = db.ReferenceField('Department', required=True)
     _class = db.ReferenceField('_Class', required=True)
+    period = db.IntField()
     counselor = db.ReferenceField('User', required=True)
     places = db.IntField(required=True)      # 名额
     participants = db.ListField(default=[])  # 申请人列表 存放 s_id
@@ -28,6 +29,9 @@ class ProjectDetail(BaseModel, db.Document):
 
     def __init__(self, **kwargs):
         super(ProjectDetail, self).__init__(**kwargs)
+        if not self.period:
+            year = datetime.datetime.today().year
+            self.period = year
 
     def initialize(self, num):
         self.status = 1
@@ -70,7 +74,7 @@ class ProjectDetail(BaseModel, db.Document):
         if 'status' in data:
             self.status = data['status']
         if 'result' in data:
-            self.result = data['result']
+            self.result = [item.name for item in User.objects(s_id__in = data['result'])]
 
         self.save()
 
@@ -90,13 +94,15 @@ class ProjectDetail(BaseModel, db.Document):
                 'id': str(self._class.id),
                 'name': self._class.name
             },
+            'period': self.period,
             'counselor': self.counselor.name,
             'places': self.places,
             'expiration': self.exp,
             'create_date': time.mktime(self.create_date.timetuple()),
             'participants': self.participants,
             'status': self.status,
-            'result': self.result
+            # 'result': self.result
+            'result': [item.name for item in User.objects(s_id__in = self.result)]
         }
 
     def __repr__(self):

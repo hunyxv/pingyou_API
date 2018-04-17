@@ -28,7 +28,7 @@ class DevelopmentConfig(Config):
     MAIL_POST = 465  # 或994
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or '15127860671@163.com'
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'hunyxv639'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'password'
     MONGODB_SETTINGS = {
         'db': 'pingyou',
         'host': '127.0.0.1',
