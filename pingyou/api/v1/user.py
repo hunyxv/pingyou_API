@@ -115,9 +115,13 @@ class UserAPI(BaseAPI):
         _class = data.get('class', class_)
         password = data.get('password', 'password')
 
+        d = Department.get_by_id(department)
+        c = _Class.get_by_id(_class)
+
         if id == 'all':
             num = data.get('num', 1)
-            start_sid = int(data.get('start_sid'))
+            jie = int(data.get('start_sid'))
+            start_sid = jie * 1000000 + d.num * 1000 + c.num * 100 + 1
             criterion = [department, _class, num, start_sid,password]
 
             if all(criterion):

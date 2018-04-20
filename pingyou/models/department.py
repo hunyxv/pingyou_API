@@ -3,6 +3,7 @@ from pingyou.models.base_model import BaseModel
 
 
 class Department(BaseModel, db.Document):
+    num = db.IntField()
     up_one_level = db.ReferenceField('Department')
     name = db.StringField(required=True, max_length=50)
 
